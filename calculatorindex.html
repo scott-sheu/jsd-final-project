@@ -1,0 +1,48 @@
+<head>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    
+
+</head>
+<body></body>
+    <section class="container">
+ 
+        <p><b>Retirement Savings Calculator</b></p>
+        <label>Current Age:</label><br />
+        <input id="inputCurrentAge" type="number" value="30"></input><br />
+        <label>Retirement Age:</label><br />
+        <input id="inputRetirementAge" type="number" value="65"></input><br />
+        <label>Life Expectancy:</label><br />
+        <input id="inputDeathAge" type="number" value="85"></input><br />
+        <label>Initial Savings:</label><br />
+        <input id="inputSavingsInitial" type="number" value="100000"></input><br />
+        
+        <label>Return on Investment per Period Before Retirement:</label><br />
+        <input id="inputReturnOnInvestmentPerPeriodBeforeRetirement" type="number" value=".07"></input><br />
+    
+        <label>New Savings per Period:</label><br />
+        <input id="inputSavingsNewPerPeriod" type="number" value="1000"></input><br />
+    
+        <label>Return on Investment per Period After Retirement:</label><br />
+        <input id="inputReturnOnInvestmentPerPeriodAfterRetirement" type="number" value=".05"></input><br />
+    
+        <label>Retirement Income Desired per Period:</label><br />
+        <input id="inputRetirementIncomePerPeriod" value="0"></input><br />
+    
+        <button onclick="buttonCalculate_Clicked();">Calculate</button><br />
+    
+        <label>Savings at Retirement:</label><br />
+        <input id="inputSavingsAtRetirement" disabled="true"></input><br />
+    
+        <label>Savings Required:</label><br />
+        <input id="inputSavingsRequired" disabled="true"></input><br />
+ 
+    </section>
+    <div id='barChart'></div>
+</body>
+
+
+<script src='calculatorapp.js'></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.3.min.js"><\/script>')</script>
+
