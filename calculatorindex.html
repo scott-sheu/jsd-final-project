@@ -1,250 +1,127 @@
-$(document).ready(function () {
+<!doctype html>
+<head>
+  <meta charset="utf-8">
 
-//when Calculate button is clicked, takes inputs and calculates savings, generates charts
-$("#buttonCalculate").click(function (click) {
-        console.log("Calc button clicked");
-        event.preventDefault();
-        
-
-    
-    //Get input values   
-        var inputName = document.getElementById("inputName");
-        var inputCurrentAge = document.getElementById("inputCurrentAge");
-        var inputRetirementAge = document.getElementById("inputRetirementAge");
-        var inputDeathAge = document.getElementById("inputDeathAge");
-        var inputSavingsInitial = document.getElementById("inputSavingsInitial");
-        var inputReturnOnInvestmentBeforeRetirement
-            = document.getElementById("inputReturnOnInvestmentBeforeRetirement");
-        var inputSavingsNewPerPeriod
-            = document.getElementById("inputSavingsNewPerPeriod");
-        var inputReturnOnInvestmentAfterRetirement
-            = document.getElementById("inputReturnOnInvestmentAfterRetirement");
-        var inputRetirementIncomePerPeriod
-            = document.getElementById("inputRetirementIncomePerPeriod");
-        var date = Date();
-        console.log(date);
-        
-        var userName = String(inputName.value);
-        var currentAge = parseFloat(inputCurrentAge.value);
-        var retirementAge = parseFloat(inputRetirementAge.value);
-        var deathAge = parseFloat(inputDeathAge.value);    
-        var savingsInitial = 
-            parseFloat(inputSavingsInitial.value);
-        var returnOnInvestmentBeforeRetirement = 
-            parseFloat(inputReturnOnInvestmentBeforeRetirement.value);
-        var savingsNewPerPeriod = 
-            parseFloat(inputSavingsNewPerPeriod.value);
-        var returnOnInvestmentAfterRetirement = 
-            parseFloat(inputReturnOnInvestmentAfterRetirement.value);
-        var retirementIncomePerPeriod = 
-            parseFloat(inputRetirementIncomePerPeriod.value);
-    
-    // Calculate length of years
-        var yearsToRetirement = retirementAge - currentAge;
-        console.log(yearsToRetirement);
-
-        var yearsToDeath = deathAge - retirementAge;
-        console.log(yearsToDeath);
-
-    // calculate savings at retirement
-        var retirementSavings = Math.trunc((savingsInitial + (savingsNewPerPeriod/returnOnInvestmentBeforeRetirement))*Math.pow((1+returnOnInvestmentBeforeRetirement),yearsToRetirement)-(savingsNewPerPeriod/returnOnInvestmentBeforeRetirement));
-        console.log("retirement savings", retirementSavings)
-    
-    // calculate savings needed at retirement
-        var savingsNeeded = Math.trunc(retirementIncomePerPeriod*(1-(Math.pow((1+(returnOnInvestmentAfterRetirement)),-yearsToDeath))))/(returnOnInvestmentAfterRetirement)
-        console.log("savings needed", savingsNeeded);
-    
-    //calculate whether you have surplus or gap
-        var differenceInSavings = retirementSavings - savingsNeeded;
-        console.log("difference in savings", differenceInSavings);
-
-    // return savings and savings needed to dom   
-        inputSavingsAtRetirement.value = retirementSavings.toLocaleString();
-        inputSavingsRequired.value = savingsNeeded.toLocaleString();
-        inputSavingsDifference.value = differenceInSavings.toLocaleString();
-
-        // $(".retirement-results").append("You'll have " + $(retirementSavings) " when you retire in " + $(yearsToRetirement)". You'll need " + $(savingsNeeded) + " to live as you'd like over the " + $(deathYears) + " you expect for retirement.");
-
-        // ($retirementResults);
-
-    //create chart
-        // Load the Visualization API and the corechart package.
-        google.charts.load('current', {packages: ['corechart']});
-        // Set a callback to run when the Google Visualization API is loaded.
-        google.charts.setOnLoadCallback(drawChart);
-        // Callback that creates and populates a data table,
-      // instantiates the pie chart, passes in the data and
-      // draws it.
-        function drawChart() {
-            // Define the chart to be drawn.
-            var data = new google.visualization.DataTable();
-            data.addColumn('string', 'Element');
-            data.addColumn('number', 'number');
-            data.addRows([
-                ['Retirement Savings', retirementSavings],
-                ['Savings Required', savingsNeeded],
-            ]);
-            var options = {'title':'Retirement Savings',
-            'width':1000,
-            'height':300};
-            
-        
-        // Instantiate and draw the chart.
-        var chart = new google.visualization.BarChart(document.getElementById('barChart'));
-            chart.draw(data, options);
-            }
-          
-//When Save button is clicked, saves results and adds to saved profiles board 
-    $("#buttonSave").click(function (click) { 
-        // event.preventDefault();
-        console.log("Save button clicked")
-    
-    //FIREBASE database 
-    //Get firebase db reference
-        var database = firebase.database();
-        // var profileAppRef = profileAppDB.ref("server/saving-data/fireblog");
-        // console.log("database", database);
-    
-    // create a section for messages data in your db
-        var databaseReference = database.ref('profiles');
-
-    // use the set method to save data to the database
-        databaseReference.push({
-            currentAge : currentAge,
-            retirementAge : retirementAge,
-            deathAge : deathAge,
-            savingsInitial : savingsInitial,
-            returnOnInvestmentBeforeRetirement : returnOnInvestmentBeforeRetirement,
-            savingsNewPerPeriod : savingsNewPerPeriod,
-            returnOnInvestmentAfterRetirement : returnOnInvestmentAfterRetirement,
-            retirementIncomePerPeriod : retirementIncomePerPeriod,
-            retirementSavings : retirementSavings,
-            savingsNeeded : savingsNeeded,
-            name : userName,
-            date : date,
-        }); 
-
-    })
-});
-
-
-
-//display saved profiles on site
-    //grab li from dom
-    const $savedProfileList = $('.saved-profiles');
-
-    // use reference to app database to listen for changes in messages data
-
-    firebase.database().ref('profiles').on('value',(snap)=>{
-        console.log(snap.val());
-        const allProfiles = snap.val();
-        const profiles = [];
-
-        for (let prof in allProfiles) {
-            // get method is supposed to represent HTTP GET method
-            let name = allProfiles[prof].name;
-            let currentAge = allProfiles[prof].currentAge;
-            let retirementAge = allProfiles[prof].retirementAge;
-            let deathAge = allProfiles[prof].deathAge;
-            let savingsInitial = allProfiles[prof].savingsInitial;
-            let returnOnInvestmentBeforeRetirement = allProfiles[prof].returnOnInvestmentBeforeRetirement;
-            let savingsNewPerPeriod = allProfiles[prof].savingsNewPerPeriod;
-            let returnOnInvestmentAfterRetirement = allProfiles[prof].returnOnInvestmentAfterRetirement;
-            let retirementIncomePerPeriod = allProfiles[prof].retirementIncomePerPeriod;
-            let retirementSavings = allProfiles[prof].retirementSavings;
-            let savingsNeeded = allProfiles[prof].savingsNeeded;
-            let date = allProfiles[prof].date;
-        
-            // create message element
-            let $profileListElement = $('<li></li>');
-
-            // add id as data attribute so we can refer to later for updating
-            $profileListElement.attr('data-id', prof);
-
-            // add user name to li
-            $profileListElement.html(name);
-            // $profileListElement.html(date);
-
-            // create delete element
-            let $deleteElement = $('<i class="fa fa-trash pull-right delete"></i>');
+  <title>Retirement Calculator</title>
+    <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <!-- font awesome -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+   <!--Load the AJAX API-->
   
-            $deleteElement.on('click', function (e) {
-                let id = $(e.target.parentNode).data('id');
-                deleteProfile(id);
-            });
-            // add delete element
-            $profileListElement.append($deleteElement);
-            
-            // create load profile element
-            let $loadElement = $('</br><button id="load-button">Load Profile</button>');
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+  h1 {
+    padding-top: 20px;
+    padding-right: 30px;
+    padding-left: 30px;
+  }
 
-            $loadElement.on('click', function (e) {
-                let id = $(e.target.parentNode).data('id');
-                loadProfile(id);
-            });
-
-            // add load element
-            $profileListElement.append($loadElement);
-
-            // push element to array of profiles
-            profiles.push($profileListElement);
-        }
-        // remove lis to avoid dupes
-        $savedProfileList.empty();
-        for (let i in profiles) {
-        $savedProfileList.append(profiles[i]);
-        }
-    });
-
-    //function to delete selected profile data
-    function deleteProfile(id) {
-        // find message whose objectId is equal to the id we're searching with
-        var databaseReference = firebase.database().ref('profiles' + id);
-      
-        databaseReference.remove();
-      }
-
-    //function to selected load profile data
-    function loadProfile(id) {
-        var databaseReference = firebase.database().ref('profiles' + id);
-        firebase.database().ref('profiles').on('value',(snap)=>{
-            console.log(snap.val());
-            const allProfiles = snap.val();
-            for (let prof in allProfiles) {
-            let name = allProfiles[prof].name;
-            let currentAge = allProfiles[prof].currentAge;
-            let retirementAge = allProfiles[prof].retirementAge;
-            let deathAge = allProfiles[prof].deathAge;
-            let savingsInitial = allProfiles[prof].savingsInitial;
-            let returnOnInvestmentBeforeRetirement = allProfiles[prof].returnOnInvestmentBeforeRetirement;
-            let savingsNewPerPeriod = allProfiles[prof].savingsNewPerPeriod;
-            let returnOnInvestmentAfterRetirement = allProfiles[prof].returnOnInvestmentAfterRetirement;
-            let retirementIncomePerPeriod = allProfiles[prof].retirementIncomePerPeriod;
-            let retirementSavings = allProfiles[prof].retirementSavings;
-            let savingsNeeded = allProfiles[prof].savingsNeeded;
-            let date = allProfiles[prof].date;
-        //probably need to reload here
-        
-        //push to input boxes
-        inputName.value = name.toLocaleString();
-        inputCurrentAge.value = currentAge.toLocaleString();
-        inputRetirementAge.value = retirementAge.toLocaleString();
-        inputDeathAge.value = deathAge.toLocaleString();
-        inputSavingsInitial.value = savingsInitial.toLocaleString();
-        inputReturnOnInvestmentBeforeRetirement.value
-            = returnOnInvestmentBeforeRetirement.toLocaleString();
-        inputSavingsNewPerPeriod.value
-            = savingsNewPerPeriod.toLocaleString();
-        inputReturnOnInvestmentAfterRetirement.value
-            = returnOnInvestmentAfterRetirement.toLocaleString();
-        inputRetirementIncomePerPeriod.value
-            = retirementIncomePerPeriod.toLocaleString();
-        inputSavingsRequired.value = savingsNeeded.toLocaleString();
-            }
-        });
-    
+  div {
+  padding-right: 30px;
+  padding-left: 30px;
+  }
+  label {
+  padding-top: 5px;
+  padding-bottom: 2px;
     }
 
+  </style>
+  </head>
+<body>
+<h1><b>Retirement Savings Calculator</b></h1><br />
+      <div class="form-group">
+        <h2>About you</h2><br />
 
+          <label>Name:</label><br />
+          <input id="inputName" type="string" value="Anon"></input><br />
 
-});
+          <label>Current Age:</label><br />
+          <input id="inputCurrentAge" type="number" value="30"></input><br />
+
+          <label>Retirement Age:</label><br />
+          <input id="inputRetirementAge" type="number" value="65"></input><br />
+
+          <label>Life Expectancy:</label><br />
+          <input id="inputDeathAge" type="number" value="85"></input><br />
+
+          <label>Current Savings:</label><br />
+          <input id="inputSavingsInitial" type="number" value="100000"></input><br />
+          
+          <label>Annual Return on Investment Before Retirement:</label><br />
+          <input id="inputReturnOnInvestmentBeforeRetirement" type="number" value=".07"></input><br />
+      
+          <label>New Savings per Period:</label><br />
+          <input id="inputSavingsNewPerPeriod" type="number" value="1000"></input><br />
+
+          <label>Expected Annual Return on Investment After Retirement:</label><br />
+          <input id="inputReturnOnInvestmentAfterRetirement" type="number" value=".05"></input><br />
+      
+          <label>Annual Retirement Income Desired:</label><br />
+          <input id="inputRetirementIncomePerPeriod" value="50000"></input><br /><br />
+      
+          <button id="buttonCalculate">Calculate</button><br /> 
+      </div>
+<div>
+  <h2>Your results</h2><br />
+      <div id="retirement-results"></div><br>
+      <label>Savings at Retirement:</label><br />
+      <input id="inputSavingsAtRetirement" disabled="true"></input><br />
+
+      <label>Savings Required:</label><br />
+      <input id="inputSavingsRequired" disabled="true"></input><br />
+      <label>Difference between savings at retirement and savings needed:</label><br />
+      <input id="inputSavingsDifference" disabled="true"></input><br /><br />
+      <div id="barChart"></div><br />
+      <button id="buttonSave">Save Results</button><br /><br />  
+      
+    </div>
+  <div class="panel-group">
+    <div class="panel panel-default">
+      <div class="panel-heading">Saved Results</div>
+      <div class="panel-body">
+        <container class="profiles">
+          <ul class="saved-profiles">
+          </ul>
+        </div>
+      </div>
+
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-analytics.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-database.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  var firebaseConfig = {
+    apiKey: "AIzaSyDSFYOf5jabXIUsZMFnneg4piY5N10PJj8",
+    authDomain: "jsd-final-project-6c496.firebaseapp.com",
+    databaseURL: "https://jsd-final-project-6c496-default-rtdb.firebaseio.com",
+    projectId: "jsd-final-project-6c496",
+    storageBucket: "jsd-final-project-6c496.appspot.com",
+    messagingSenderId: "967001222759",
+    appId: "1:967001222759:web:c1aacd95fc1dd4718feec2",
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+
+<!-- Bootstrap JS -->
+<script rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<!-- jQuery -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+<!-- Google Charts -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript"></script>
+
+<script src="calculatorapp.js"></script>
+    
+
+</body>
+</html>
